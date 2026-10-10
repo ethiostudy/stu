@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 
 <title>Study Planner</title>
 
@@ -30,10 +30,17 @@
     overflow:hidden;
   }
 
+  /* The iframe is pinned to the VISIBLE area of the phone.
+     100vh = the "large" viewport (taller than what you can see while the
+     browser toolbar is showing), which pushed the bottom of the app behind
+     the toolbar. 100dvh = the real visible height. */
   #gwFrame{
-    border:0;
+    position:fixed;
+    top:0; left:0; right:0;
     width:100%;
-    height:100vh;
+    height:100vh;      /* fallback for old browsers */
+    height:100dvh;     /* real visible height on modern mobile browsers */
+    border:0;
     display:block;
   }
 </style>
@@ -42,14 +49,26 @@
 <body>
 
 <iframe id="gwFrame"
-  src="https://script.google.com/macros/s/AKfycbzRGyG15U8MiWjNfUQlUbpwGiN1Qcra-Kvvyn8nQRxC563yZ1SixDSZ4X2SQtswauwt/exec"
+  src="https://script.google.com/macros/s/AKfycbyjcBPfxnh9Gikwcfsgs63tJsicNlq5iOnKRQjGuj0hNcu-7cUdIUl4gtM_-5rwtv0n/exec"
   referrerpolicy="origin"></iframe>
 
 <script>
-  var BASE_URL = "https://script.google.com/macros/s/AKfycbzRGyG15U8MiWjNfUQlUbpwGiN1Qcra-Kvvyn8nQRxC563yZ1SixDSZ4X2SQtswauwt/exec";
+  var BASE_URL = "https://script.google.com/macros/s/AKfycbyjcBPfxnh9Gikwcfsgs63tJsicNlq5iOnKRQjGuj0hNcu-7cUdIUl4gtM_-5rwtv0n/exec";
 
   var EXPECTED_APP_ORIGIN_SUFFIX = ".googleusercontent.com";
   var iframe = document.getElementById("gwFrame");
+
+  /* Fallback for browsers without 100dvh: window.innerHeight is always the
+     height you can actually see. Keeps the iframe in step when the browser
+     toolbar shows/hides or the phone rotates. */
+  (function () {
+    var supportsDvh = window.CSS && CSS.supports && CSS.supports("height", "100dvh");
+    if (supportsDvh) return;
+    function fit() { iframe.style.height = window.innerHeight + "px"; }
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    fit();
+  })();
 
   function isTrustedAppOrigin(origin) {
     try {
